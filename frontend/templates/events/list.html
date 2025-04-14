@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Events - List View{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Events</h1>
+    <div>
+        <a href="{{ url_for('events_grid') }}" class="btn btn-outline-secondary me-2"><i class="fas fa-th"></i> Grid</a>
+        <a href="{{ url_for('events_calendar') }}" class="btn btn-outline-secondary me-2"><i class="fas fa-calendar"></i> Calendar</a>
+        {% if 'user' in session %}
+        <a href="{{ url_for('create_event') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create Event</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3" id="filter-form">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" placeholder="Event name, location...">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" class="form-select" name="category">
+                    <option value="">All Categories</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Business">Business</option>
+                    <option value="Music">Music</option>
+                    <option value="Art">Art</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="location" class="form-label">Location</label>
+                <select id="location" class="form-select" name="location">
+                    <option value="">All Locations</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Panvel">Panvel</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Bangalore">Bangalore</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="list-group" id="events-list">
+    {% for event in events %}
+    <div class="list-group-item list-group-item-action" data-name="{{ event.name }}" data-category="{{ event.category }}" data-location="{{ event.location }}">
+        <div class="d-flex w-100 justify-content-between">
+            <div class="d-flex">
+                <img src="{{ event.image or 'https://via.placeholder.com/100' }}" alt="{{ event.name }}" class="me-3" style="width: 100px; height: 100px; object-fit: cover;">
+                <div>
+                    <h5 class="mb-1">{{ event.name }}</h5>
+                    <p class="mb-1"><i class="fas fa-calendar-alt"></i> {{ event.date }} | <i class="fas fa-map-marker-alt"></i> {{ event.location }}</p>
+                    <small class="text-muted">{{ event.category }}</small>
+                    <p class="mb-1 mt-2">{{ event.description|truncate(150) }}</p>
+                </div>
+            </div>
+            <div class="d-flex flex-column align-items-end">
+                <div class="mb-2">
+                    <span class="badge bg-primary rounded-pill"><i class="fas fa-users"></i> {{ event.popularity }}</span>
+                </div>
+                <div>
+                    <a href="{{ url_for('view_event', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                    {% if 'user' in session %}
+                    <button class="btn btn-sm btn-outline-secondary save-event" data-event-id="{{ event.id }}">
+                        <i class="far fa-bookmark"></i> Save
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1">Previous</a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+            <a class="page-link" href="#">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventsList = document.getElementById('events-list');
+    
+    // Function to filter events
+    function filterEvents() {
+        const search = document.getElementById('search').value.toLowerCase();
+        const category = document.getElementById('category').value;
+        const location = document.getElementById('location').value;
+
+        document.querySelectorAll('.list-group-item').forEach(eventItem => {
+            const eventName = eventItem.getAttribute('data-name').toLowerCase();
+            const eventCategory = eventItem.getAttribute('data-category');
+            const eventLocation = eventItem.getAttribute('data-location');
+
+            const matchesSearch = eventName.includes(search);
+            const matchesCategory = category === "" || eventCategory === category;
+            const matchesLocation = location === "" || eventLocation === location;
+
+            if (matchesSearch && matchesCategory && matchesLocation) {
+                eventItem.style.display = 'block';
+            } else {
+                eventItem.style.display = 'none';
+            }
+        });
+    }
+
+    // Add event listener to the filter form
+    document.getElementById('filter-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        filterEvents();
+    });
+
+    // Initial filter
+    filterEvents();
+});
+</script>
+{% endblock %}

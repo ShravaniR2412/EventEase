@@ -41,3 +41,18 @@ Thumbs.db
 # Mongo URI backup or export files
 *.bson
 *.json
+
+
+# Frontend files
+/node_modules/
+/build/
+/dist/
+/*.log
+/public/
+/*.env.local
+/*.env.production
+/*.env.development
+
+# React build output
+build/
+*.log

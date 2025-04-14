@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <img src="https://via.placeholder.com/150" class="rounded-circle mb-3" alt="Profile Picture">
+                <h3>{{ user.username }}</h3>
+                <p class="text-muted mb-1">{{ user.email }}</p>
+                {% if user.bio %}
+                <p class="mt-3">{{ user.bio }}</p>
+                {% else %}
+                <p class="text-muted mt-3">No bio added yet</p>
+                {% endif %}
+                <a href="#" class="btn btn-outline-primary mt-3">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">My Events</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="myEventsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="organized-tab" data-bs-toggle="tab" data-bs-target="#organized" type="button">Organized</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="attending-tab" data-bs-toggle="tab" data-bs-target="#attending" type="button">Attending</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="saved-tab" data-bs-toggle="tab" data-bs-target="#saved" type="button">Saved</button>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="myEventsTabContent">
+                    <div class="tab-pane fade show active" id="organized" role="tabpanel">
+                        <div class="list-group">
+                            {% for event in organized_events %}
+                            <a href="{{ url_for('view_event', event_id=event.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ event.name }}</h5>
+                                    <small>{{ event.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ event.location }}</p>
+                                <small>{{ event.category }}</small>
+                            </a>
+                            {% else %}
+                            <div class="alert alert-info">You haven't organized any events yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="attending" role="tabpanel">
+                        <div class="list-group">
+                            {% for event in attending_events %}
+                            <a href="{{ url_for('view_event', event_id=event.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ event.name }}</h5>
+                                    <small>{{ event.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ event.location }}</p>
+                                <small>{{ event.category }}</small>
+                            </a>
+                            {% else %}
+                            <div class="alert alert-info">You're not attending any events yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="saved" role="tabpanel">
+                        <div class="list-group">
+                            {% for event in saved_events %}
+                            <a href="{{ url_for('view_event', event_id=event.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ event.name }}</h5>
+                                    <small>{{ event.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ event.location }}</p>
+                                <small>{{ event.category }}</small>
+                            </a>
+                            {% else %}
+                            <div class="alert alert-info">You haven't saved any events yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

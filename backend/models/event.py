@@ -10,7 +10,8 @@ class Event:
             "description": data.get("description", ""),
             "image": data.get("image", ""),
             "category": data.get("category", ""),
-            "popularity": data.get("popularity", 0)
+            "time": data.get("time", ""),  # lowercase 'time' for consistency
+            "created_by": data.get("created_by")
         }
 
     @staticmethod
@@ -23,5 +24,7 @@ class Event:
             "description": event["description"],
             "image": event.get("image", ""),
             "category": event.get("category", ""),
-            "popularity": event.get("popularity", 0)
+            "time": event.get("time", ""),  # include time in dict
+            "popularity": event.get("popularity", 0),
+            "created_by": str(event.get("created_by", ""))
         }

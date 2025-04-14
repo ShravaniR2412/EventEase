@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Events - Calendar View{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+<style>
+    #calendar {
+        max-width: 1100px;
+        margin: 20px auto;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .fc-event {
+        cursor: pointer;
+        border: none;
+        font-size: 0.9em;
+        padding: 2px 4px;
+    }
+
+    .fc-daygrid-event {
+        border-radius: 4px;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.5em;
+        color: #0d6efd;
+    }
+
+    .fc-button {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+    }
+
+    .fc-button:hover {
+        background-color: #0b5ed7 !important;
+        border-color: #0a58ca !important;
+    }
+
+    .fc-button-active {
+        background-color: #0a58ca !important;
+        border-color: #0a58ca !important;
+    }
+
+    .fc-event-title {
+        font-weight: bold;
+    }
+
+    .fc-event-location {
+        font-size: 0.8em;
+        display: block;
+        margin-top: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Events Calendar</h1>
+    <div>
+        <a href="{{ url_for('events_list') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-list"></i> List View
+        </a>
+        <a href="{{ url_for('events_grid') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-th"></i> Grid View
+        </a>
+        {% if 'user' in session %}
+        <a href="{{ url_for('create_event') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Event
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search Events</label>
+                <input type="text" class="form-control" id="search" placeholder="Event name, location...">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Business">Business</option>
+                    <option value="Music">Music</option>
+                    <option value="Art">Art</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="location" class="form-label">Location</label>
+                <select id="location" class="form-select">
+                    <option value="">All Locations</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Panvel">Panvel</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Bangalore">Bangalore</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100">Reset</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="calendar"></div>
+
+<div class="mt-4">
+    <div class="legend d-flex flex-wrap gap-3 justify-content-center">
+        <span class="badge bg-primary">Tech</span>
+        <span class="badge bg-success">Business</span>
+        <span class="badge bg-danger">Music</span>
+        <span class="badge bg-warning text-dark">Art</span>
+        <span class="badge bg-info">Sports</span>
+        <span class="badge bg-secondary">Other</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+<script type="application/json" id="events-data">
+    {{ events | tojson | safe }}
+</script>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    const rawEvents = JSON.parse(document.getElementById('events-data').textContent);
+    function getCategoryColor(category) {
+        const colors = {
+            'Tech': '#0d6efd',
+            'Business': '#198754',
+            'Music': '#dc3545',
+            'Art': '#ffc107',
+            'Sports': '#0dcaf0',
+            'Other': '#6c757d'
+        };
+        return colors[category] || '#6c757d';
+    }
+
+    const mappedEvents = rawEvents.map(event => ({
+        id: event.id,
+        title: event.name,
+        start: event.date + 'T10:00:00',
+        end: event.date + 'T17:00:00',
+        extendedProps: {
+            location: event.location,
+            description: event.description,
+            category: event.category
+        },
+        backgroundColor: getCategoryColor(event.category),
+        borderColor: getCategoryColor(event.category),
+        textColor: '#ffffff'
+    }));
+
+    const calendarEl = document.getElementById('calendar');
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+        },
+        views: {
+            listMonth: { buttonText: 'List' }
+        },
+        eventDisplay: 'block',
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: 'short'
+        },
+        events: mappedEvents,
+        eventClick: function (info) {
+            window.location.href = '/events/' + info.event.id;
+        },
+        eventContent: function (arg) {
+            const titleEl = document.createElement('div');
+            titleEl.classList.add('fc-event-title');
+            titleEl.innerText = arg.event.title;
+
+            const locationEl = document.createElement('div');
+            locationEl.classList.add('fc-event-location');
+            locationEl.innerText = arg.event.extendedProps.location;
+
+            return { domNodes: [titleEl, locationEl] };
+        },
+        eventDidMount: function (arg) {
+            if (arg.event.extendedProps.description) {
+                new bootstrap.Tooltip(arg.el, {
+                    title: arg.event.extendedProps.description,
+                    placement: 'top',
+                    trigger: 'hover'
+                });
+            }
+        }
+    });
+
+    calendar.render();
+
+    function filterEvents() {
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        const category = document.getElementById('category').value;
+        const location = document.getElementById('location').value;
+
+        calendar.getEvents().forEach(event => {
+            const matchesSearch = !searchTerm || event.title.toLowerCase().includes(searchTerm) || event.extendedProps.location.toLowerCase().includes(searchTerm);
+            const matchesCategory = !category || event.extendedProps.category === category;
+            const matchesLocation = !location || event.extendedProps.location === location;
+            event.setProp('display', matchesSearch && matchesCategory && matchesLocation ? 'auto' : 'none');
+        });
+    }
+
+    function resetFilters() {
+        document.getElementById('search').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('location').value = '';
+        filterEvents();
+    }
+
+    document.getElementById('search').addEventListener('input', filterEvents);
+    document.getElementById('category').addEventListener('change', filterEvents);
+    document.getElementById('location').addEventListener('change', filterEvents);
+    document.getElementById('resetFilters').addEventListener('click', resetFilters);
+});
+
+</script>
+{% endblock %}

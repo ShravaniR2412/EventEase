@@ -36,9 +36,20 @@ def create_event():
 @event_blueprint.route("/get", methods=["GET"])
 def get_all_events():
     try:
-        events_cursor = client["events_db"]["events"].find()
+        # Assuming user_id is passed as a query parameter
+        user_id = request.args.get('user_id')  # Example: /get?user_id=123
+        
+        if not user_id:
+            return jsonify({"error": "User ID is required"}), 400
+        
+        # Find all events where the 'created_by' field matches the user_id
+        events_cursor = client["events_db"]["events"].find({"created_by": user_id})
+        
+        # Convert MongoDB documents to dictionaries using the Event model
         events = [Event.to_dict(event) for event in events_cursor]
+        
         return jsonify(events), 200
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -54,22 +65,30 @@ def get_event(event_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Update an event
-@event_blueprint.route("/update/<string:event_id>", methods=["PUT"])
+# Update an event using POST
+@event_blueprint.route("/update/<string:event_id>", methods=["POST"])
 def update_event(event_id):
     data = request.get_json()
+
     if not data or not isinstance(data, dict):
         return jsonify({"error": "Invalid request data"}), 400
 
     try:
         object_id = ObjectId(event_id)
-        result = client["events_db"]["events"].update_one({"_id": object_id}, {"$set": data})
+        result = client["events_db"]["events"].update_one(
+            {"_id": object_id},
+            {"$set": data}
+        )
+
         if result.matched_count == 0:
             return jsonify({"error": "Event not found"}), 404
+
         updated_event = client["events_db"]["events"].find_one({"_id": object_id})
         return jsonify(Event.to_dict(updated_event)), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # Delete an event
 @event_blueprint.route("/delete/<string:event_id>", methods=["DELETE"])

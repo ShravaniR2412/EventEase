@@ -17,8 +17,9 @@ class EventService:
         
         return Event.to_dict(event_data)
 
-    def get_all_events(self):
-        events_cursor = self.mongo.db.events.find()
+    def get_all_events(self, user_id):
+        # Find all events where the 'created_by' field matches the user_id
+        events_cursor = self.mongo.db.events.find({"created_by": user_id})
         
         # Convert MongoDB documents to dictionaries using the Event model
         events = [Event.to_dict(event) for event in events_cursor]

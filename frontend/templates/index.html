@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container text-center">
+        <h1 class="display-4">Welcome to EventEase</h1>
+        <p class="lead">Discover, create, and manage events with ease</p>
+        <a href="{{ url_for('events_list') }}" class="btn btn-light btn-lg">Browse Events</a>
+        {% if 'user' not in session %}
+        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg ms-2">Join Now</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Organize Events</h3>
+                    <p class="card-text">Be informed about all your important meetings and events!</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Create Events</h3>
+                    <p class="card-text">Organize your own events and invite participants.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Browse Events</h3>
+                    <p class="card-text">Explore upcoming events in your area of interest.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+</div>
+{% endblock %}

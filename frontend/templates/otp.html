@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Verify OTP{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0">Verify OTP</h3>
+      </div>
+      <div class="card-body">
+        <div id="message" class="alert d-none"></div>
+
+        <!-- Step 1: Enter Email & Send OTP -->
+        <form id="sendOtpForm" method="POST" action="/send-otp">
+          <div class="mb-3">
+            <label for="email" class="form-label">Enter your Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Send OTP</button>
+          </div>
+        </form>
+
+        <!-- Step 2: Verify OTP -->
+        <form id="verifyOtpForm" class="mt-4 d-none">
+          <div class="mb-3">
+            <label for="otp" class="form-label">Enter OTP</label>
+            <input type="text" class="form-control" id="otp" name="otp" required>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success">Verify OTP</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sendOtpForm = document.getElementById('sendOtpForm');
+        const verifyOtpForm = document.getElementById('verifyOtpForm');
+        const messageDiv = document.getElementById('message');
+        
+        // Handle Send OTP form submission
+        sendOtpForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/send-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('OTP sent to your email!', 'success');
+                    // Hide send form and show verify form
+                    sendOtpForm.classList.add('d-none');
+                    verifyOtpForm.classList.remove('d-none');
+                } else {
+                    showMessage(data.error || 'Failed to send OTP', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'danger');
+            }
+        });
+        
+        // Handle Verify OTP form submission
+        verifyOtpForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const otp = document.getElementById('otp').value;
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/verify-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: email,
+                        otp: otp 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('OTP verified successfully!', 'success');
+                    // Redirect to dashboard or next page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/events';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'Invalid OTP', 'danger');
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, 'danger');
+            }
+        });
+        
+        function showMessage(message, type) {
+            messageDiv.textContent = message;
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.classList.remove('d-none');
+        }
+    });
+    </script>
+{% endblock %}

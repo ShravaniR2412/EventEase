@@ -20,13 +20,14 @@ def login():
         })
         if response.status_code == 200:
             session['user'] = response.json()
-            return redirect(url_for('user_profile'))
+            return render_template('otp.html', error='Registration failed')
         return render_template('login.html', error='Invalid credentials')
     
     # ✅ This handles GET properly
     
     return render_template('login.html')
-      
+
+ 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -244,6 +245,7 @@ def save_event(event_id):
         headers={'Authorization': f'Bearer {session["user"]["token"]}'})
     
     return jsonify({'success': response.status_code == 200})
+
 
 
 @app.route('/logout')
